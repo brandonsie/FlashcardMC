@@ -71,7 +71,7 @@ quizFlashcards <- function(input, reps = 0, focusrows = 0,
 		}
 		
 		input$NAttempts[index] %<>% +1
-		input$TimeStamp[index] <- Sys.time()
+		input$TimeStamp[index] <- format(Sys.time())
 		
 	}
 	
