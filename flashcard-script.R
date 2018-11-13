@@ -41,7 +41,7 @@ quizFlashcards <- function(input, reps = 0, focusrows = 0,
 		otherprompts <- vector(mode = "integer")
 		for(i in 1:max(input$CorrectStreak)){
 			otherprompts %<>% c((1:nrow(input))[
-				input$CorrectStreak==1] %>% randomizeSet)
+				input$CorrectStreak==i] %>% randomizeSet)
 		}
 		
 		lineup <- c(wrongprompts, newprompts, otherprompts)
