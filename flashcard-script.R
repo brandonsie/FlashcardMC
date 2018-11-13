@@ -16,14 +16,35 @@ setupFlashcards <- function(input){
 }
 
 quizFlashcards <- function(input, reps = 0, focusrows = 0,
-													 choices = 4, invert = FALSE, requiz = TRUE){
+													 choices = 4, invert = FALSE, requiz = TRUE,
+													 waitAnswer =TRUE){
 	
 	#if invert, flip prompt and answer
 	if(invert){input <- flipQA(input)}
 	
+	#randomize prompts, prioritizing (1) previously incorrect (2) new prompts
+	# (3) shortest CorrectStreak
+	
 	#set random order of prompt
 	if(focusrows == 0){
-		lineup <- (1:nrow(input))[order(rnorm(1:nrow(input)))]
+		
+		wrongprompts <- (1:nrow(input))[input$NAttempts>0 & input$CorrectStreak==0] 
+		
+		newprompts <- (1:nrow(input))[input$NAttempts==0]
+		
+		otherprompts <- (1:nrow(input))[-c(wrongprompts,newprompts)]
+		
+		if(length(wrongprompts)>0){
+			wrongprompts <- wrongprompts[order(rnorm(1:length(wrongprompts)))]}
+		
+		if(length(newprompts)>0){
+			newprompts <- newprompts[order(rnorm(1:length(newprompts)))]}
+		
+		if(length(otherprompts)>0){
+			otherprompts <- otherprompts[order(rnorm(1:length(otherprompts)))]}
+		
+		lineup <- c(wrongprompts, newprompts, otherprompts)
+		# lineup <- (1:nrow(input))[order(rnorm(1:nrow(input)))]
 	} else if(length(focusrows) == 1){
 		lineup <- focusrows
 	} else {
@@ -50,6 +71,7 @@ quizFlashcards <- function(input, reps = 0, focusrows = 0,
 		
 		
 		cat(paste0("\n[",input$Prompt[index],"]"))
+		if(waitAnswer){readline(prompt="Press Enter to view answer choices")}
 		print(answers)
 		userchoice <- readline(prompt="Choose the number of the right answer: ")
 		
@@ -77,6 +99,12 @@ quizFlashcards <- function(input, reps = 0, focusrows = 0,
 	
 	print(paste("Yout got",nright,"correct and",nwrong,"incorrect."))
 	
+	if(min(input$CorrectStreak)>0){
+		print(paste("You are on a correct streak of at least",
+								min(input$CorrectStreak),"for all terms."))
+	}
+	
+	
 	
 	#(!) if requiz, re-test wrong answers
 	if(requiz & length(wrongreps) > 0){
@@ -102,7 +130,7 @@ flipQA <- function(input, cols = c(1:2)){
 if(FALSE){
 	#Example run
 	libcallFlashcards()
-	v1 <- fread("vocab1.csv",data.table=FALSE)
+	v1 <- fread("vocab2.csv",data.table=FALSE)
 	v1 %<>% setupFlashcards()
-	v1 %<>% quizFlashcards(3)
+	v1 %<>% quizFlashcards(10)
 }
