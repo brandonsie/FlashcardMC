@@ -15,6 +15,11 @@ setupFlashcards <- function(input){
 	return(input)
 }
 
+randomizeSet <- function(x){
+	if(length(x)==0){return(x)}
+	x[order(rnorm(1:length(x)))]
+}
+
 quizFlashcards <- function(input, reps = 0, focusrows = 0,
 													 choices = 4, invert = FALSE, requiz = TRUE,
 													 waitAnswer =TRUE){
@@ -28,20 +33,16 @@ quizFlashcards <- function(input, reps = 0, focusrows = 0,
 	#set random order of prompt
 	if(focusrows == 0){
 		
-		wrongprompts <- (1:nrow(input))[input$NAttempts>0 & input$CorrectStreak==0] 
+		wrongprompts <- (1:nrow(input))[
+			input$NAttempts>0 & input$CorrectStreak==0] %>% randomizeSet 
 		
-		newprompts <- (1:nrow(input))[input$NAttempts==0]
+		newprompts <- (1:nrow(input))[input$NAttempts==0] %>% randomizeSet
 		
-		otherprompts <- (1:nrow(input))[-c(wrongprompts,newprompts)]
-		
-		if(length(wrongprompts)>0){
-			wrongprompts <- wrongprompts[order(rnorm(1:length(wrongprompts)))]}
-		
-		if(length(newprompts)>0){
-			newprompts <- newprompts[order(rnorm(1:length(newprompts)))]}
-		
-		if(length(otherprompts)>0){
-			otherprompts <- otherprompts[order(rnorm(1:length(otherprompts)))]}
+		otherprompts <- vector(mode = "integer")
+		for(i in 1:max(input$CorrectStreak)){
+			otherprompts %<>% c((1:nrow(input))[
+				input$CorrectStreak==1] %>% randomizeSet)
+		}
 		
 		lineup <- c(wrongprompts, newprompts, otherprompts)
 		# lineup <- (1:nrow(input))[order(rnorm(1:nrow(input)))]
@@ -133,4 +134,5 @@ if(FALSE){
 	v1 <- fread("vocab2.csv",data.table=FALSE)
 	v1 %<>% setupFlashcards()
 	v1 %<>% quizFlashcards(10)
+	v1 %<>% quizFlashcards(10,invert = TRUE)
 }
