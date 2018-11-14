@@ -15,11 +15,6 @@ setupFlashcards <- function(input){
 	return(input)
 }
 
-randomizeSet <- function(x){
-	if(length(x)==0){return(x)}
-	x[order(rnorm(1:length(x)))]
-}
-
 quizFlashcards <- function(input, reps = 0, focusrows = 0,
 													 choices = 4, invert = FALSE, requiz = TRUE,
 													 waitAnswer =TRUE){
@@ -31,7 +26,7 @@ quizFlashcards <- function(input, reps = 0, focusrows = 0,
 	# (3) shortest CorrectStreak
 	
 	#set random order of prompt
-	if(focusrows == 0){
+	if(focusrows[1] == 0){
 		
 		wrongprompts <- (1:nrow(input))[
 			input$NAttempts>0 & input$CorrectStreak==0] %>% randomizeSet 
@@ -67,14 +62,16 @@ quizFlashcards <- function(input, reps = 0, focusrows = 0,
 		wronganswer <- sample(input$Answer[input$Answer != rightanswer],(choices-1))
 
 		#randomize order, keep track of correct position, and prompt user
-		answers <- sample(c(rightanswer,wronganswer)) %>% data.frame %>% setnames("")
+		answers <- sample(c(rightanswer,wronganswer)) %>% 
+			c("mark as incorrect") %>% data.frame %>% setnames("") 
 		rightpos <- (1:nrow(answers))[answers==rightanswer]
-		
+		answers %<>% format(justify = "left") #caution, left align adds white space
 		
 		cat(paste0("\n[",input$Prompt[index],"]"))
 		if(waitAnswer){readline(prompt="Press Enter to view answer choices")}
 		print(answers)
-		userchoice <- readline(prompt="Choose the number of the right answer: ")
+		userchoice <- readline(
+			prompt="Choose the number of the right answer or enter x to quit: ")
 		
 		#update nattempts correctstreak, timestamp based on correct or not
 		if(userchoice == "x"){
@@ -124,6 +121,12 @@ flipQA <- function(input, cols = c(1:2)){
 	output <- data.frame(input)
 	output[,cols] <- output[,rev(cols)]
 	return(output)
+}
+
+
+randomizeSet <- function(x){
+	if(length(x)==0){return(x)}
+	x[order(rnorm(1:length(x)))]
 }
 
 
