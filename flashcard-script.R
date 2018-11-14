@@ -60,7 +60,7 @@ quizFlashcards <- function(input, reps = 0, focusrows = 0,
 	if(focusrows[1] == 0){
 		
 		wrongprompts <- (1:nrow(input))[
-			input$NAttempts>0 & input$CorrectStreak==0] %>% randomizeSet 
+			input$NWrong >= input$CorrectStreak] %>% randomizeSet 
 		
 		newprompts <- (1:nrow(input))[input$NAttempts==0] %>% randomizeSet
 		
@@ -92,12 +92,11 @@ quizFlashcards <- function(input, reps = 0, focusrows = 0,
 		answers <- sample(c(rightanswer,wronganswer)) %>% 
 			c("[mark as incorrect]") %>% data.frame %>% setnames("") 
 		rightpos <- (1:nrow(answers))[answers==rightanswer]
-		answers %<>% format(justify = "left") #caution, left align adds white space
 		
 		cat(paste0("\n[",input$Prompt[index],"]"))
 		if(waitAnswer){view <- readline(prompt="Press Enter to view answer choices:")}
 		if(view == "x"){return(input)}
-		print(answers)
+		print(answers %>% format(justify = "left"))
 		userchoice <- readline(
 			prompt="Choose the number of the right answer or type 'x' to quit: ")
 		
@@ -126,9 +125,10 @@ quizFlashcards <- function(input, reps = 0, focusrows = 0,
 	#print some info
 	print(paste("This round, you got",nright,"correct and",nwrong,"incorrect."))
 	
-	print(paste("Your accuracy on this set is currently", 
+	print(paste("Your overall accuracy on this set is currently", 
 							((input$NRight %>% sum)/(input$NAttempts %>% sum) * 100) %>%
-								round(2),"percent."))
+								round(2),"percent. (", input$NRight %>% sum, "correct,",
+							input$NWrong %>% sum,"incorrect.)"))
 	
 	if(sum(input$NAttempts == 0)>0){
 		print(paste("There are",sum(input$NAttempts == 0),
@@ -176,8 +176,6 @@ if(FALSE){
 	#Example run
 	v1 <- setupFlashcards(c("vocab234.csv"))
 
-	
-	
 	v1 %<>% quizFlashcards(10)
 	v1 %<>% quizFlashcards(10,invert = TRUE)
 }
