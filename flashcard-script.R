@@ -71,7 +71,7 @@ quizFlashcards <- function(input, reps = 0, focusrows = 0,
 		if(waitAnswer){readline(prompt="Press Enter to view answer choices")}
 		print(answers)
 		userchoice <- readline(
-			prompt="Choose the number of the right answer or enter x to quit: ")
+			prompt="Choose the number of the right answer or type 'x' to quit: ")
 		
 		#update nattempts correctstreak, timestamp based on correct or not
 		if(userchoice == "x"){
@@ -133,8 +133,7 @@ randomizeSet <- function(x){
 
 if(FALSE){
 	#Example run
-	libcallFlashcards()
-	v1 <- fread("vocab2.csv",data.table=FALSE)
+	v1 <- data.table::fread("vocab2.csv",data.table=FALSE)
 	v1 %<>% setupFlashcards()
 	v1 %<>% quizFlashcards(10)
 	v1 %<>% quizFlashcards(10,invert = TRUE)
