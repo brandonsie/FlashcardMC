@@ -8,16 +8,47 @@ libcallFlashcards <- function(){
 setupFlashcards <- function(input){
 	#takes df with two columns (prompt, answer) and adds three new columns:
 	#nattempted, correctstreak, timestamp
+	#input can be df itself or path to df
+	cnames <- c("Prompt","Answer")
 	
-	input$NAttempts <- input$CorrectStreak <- 0
-	input$NRight <- input$NWrong <- 0
-	input$TimeStamp <- ""
+	if(class(input) == "character"){ # take vector of strings and rbind at end
+		inputdf <- data.frame(matrix(nrow=0,ncol=2)) %>% setnames(cnames)
+		for(i in 1:length(input)){
+			inputdf %<>% rbind(data.table::fread(input[i], data.table = FALSE))
+		}
+		input <- inputdf
+	}
+	
+	if(class(input)[1] == "data.frame"){
+		
+		if(ncol(input) > 2){
+			print("Warning: setupFlashcards: using only first two columns of input.")
+		} else if(ncol(input) < 2){
+			stop("Error: setupFlashcards: insufficient columns in input.")
+		}
+		
+		if(mean(names(input)[1:2] == cnames) < 1){
+			cat("Warning: setupFlashcards: coercing input column names from",
+						names(v1)[1:2], "to", cnames)
+			names(input)[1:2] <- cnames
+		}
+		
+		
+		input$NAttempts <- input$CorrectStreak <- 0
+		input$NRight <- input$NWrong <- 0
+		input$TimeStamp <- ""
+		input$WrongAnswers <- input$WrongPrompts <- ""
+	}
+	
+	
 	return(input)
 }
 
+
+
 quizFlashcards <- function(input, reps = 0, focusrows = 0,
 													 choices = 4, invert = FALSE, requiz = TRUE,
-													 waitAnswer =TRUE){
+													 waitAnswer =TRUE, saveprogress = TRUE){
 	
 	#if invert, flip prompt and answer
 	if(invert){input <- flipQA(input)}
@@ -41,11 +72,7 @@ quizFlashcards <- function(input, reps = 0, focusrows = 0,
 		
 		lineup <- c(wrongprompts, newprompts, otherprompts)
 		# lineup <- (1:nrow(input))[order(rnorm(1:nrow(input)))]
-	} else if(length(focusrows) == 1){
-		lineup <- focusrows
-	} else {
-		lineup <- focusrows[order(rnorm(focusrows))]
-	}
+	} else {lineup <- focusrows[order(rnorm(length(focusrows)))]}
 	
 	
 	#loop number of repetitions
@@ -63,12 +90,13 @@ quizFlashcards <- function(input, reps = 0, focusrows = 0,
 
 		#randomize order, keep track of correct position, and prompt user
 		answers <- sample(c(rightanswer,wronganswer)) %>% 
-			c("mark as incorrect") %>% data.frame %>% setnames("") 
+			c("[mark as incorrect]") %>% data.frame %>% setnames("") 
 		rightpos <- (1:nrow(answers))[answers==rightanswer]
 		answers %<>% format(justify = "left") #caution, left align adds white space
 		
 		cat(paste0("\n[",input$Prompt[index],"]"))
-		if(waitAnswer){readline(prompt="Press Enter to view answer choices")}
+		if(waitAnswer){view <- readline(prompt="Press Enter to view answer choices:")}
+		if(view == "x"){return(input)}
 		print(answers)
 		userchoice <- readline(
 			prompt="Choose the number of the right answer or type 'x' to quit: ")
@@ -95,13 +123,22 @@ quizFlashcards <- function(input, reps = 0, focusrows = 0,
 		
 	}
 	
-	print(paste("Yout got",nright,"correct and",nwrong,"incorrect."))
+	#print some info
+	print(paste("This round, you got",nright,"correct and",nwrong,"incorrect."))
+	
+	print(paste("Your accuracy on this set is currently", 
+							((input$NRight %>% sum)/(input$NAttempts %>% sum) * 100) %>%
+								round(2),"percent."))
+	
+	if(sum(input$NAttempts == 0)>0){
+		print(paste("There are",sum(input$NAttempts == 0),
+								"remaining unreviewed items."))
+	}
 	
 	if(min(input$CorrectStreak)>0){
 		print(paste("You are on a correct streak of at least",
 								min(input$CorrectStreak),"for all terms."))
 	}
-	
 	
 	
 	#(!) if requiz, re-test wrong answers
@@ -113,6 +150,10 @@ quizFlashcards <- function(input, reps = 0, focusrows = 0,
 	
 	#if invert, flip back
 	if(invert){input <- flipQA(input)}
+	
+	
+	#save progress
+	if(saveprogress){data.table::fwrite(input,"activeFC.csv")}
 	
 	return(input)
 }
@@ -133,8 +174,10 @@ randomizeSet <- function(x){
 
 if(FALSE){
 	#Example run
-	v1 <- data.table::fread("vocab2.csv",data.table=FALSE)
-	v1 %<>% setupFlashcards()
+	v1 <- setupFlashcards(c("vocab234.csv"))
+
+	
+	
 	v1 %<>% quizFlashcards(10)
 	v1 %<>% quizFlashcards(10,invert = TRUE)
 }
