@@ -1,0 +1,31 @@
+---
+title: "todo-flaschardmc"
+author: "Brandon Sie"
+date: "11/14/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+add saveprogress function
+modify load to mantain progress if it has the expected extra columns
+
+add reset function
+
+add "banish" function to stop testing easy words. exclude from stat counts.
+
+
+print confirmation when exit or banish
+
+keep track of wrong answers for a question and prefer those, exclude "mark as incorrect"
+- wronganswers for normal, wrongprompts for invert
+
+
+
+add addwords function. append new words to existing table, keeping progress
+
+add failsafe for improper response selection
