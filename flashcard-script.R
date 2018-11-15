@@ -59,7 +59,7 @@ quizFlashcards <- function(input, reps = 0, focusrows = 0,
 	#set random order of prompt
 	if(focusrows[1] == 0){
 		
-		wrongprompts <- (1:nrow(input))[
+		wrongprompts <- (1:nrow(input))[input$NAttempts > 0 &
 			input$NWrong >= input$CorrectStreak] %>% randomizeSet 
 		
 		newprompts <- (1:nrow(input))[input$NAttempts==0] %>% randomizeSet
@@ -174,7 +174,7 @@ randomizeSet <- function(x){
 
 if(FALSE){
 	#Example run
-	v1 <- setupFlashcards(c("vocab234.csv"))
+	v1 <- setupFlashcards(c("vocab2345.csv"))
 
 	v1 %<>% quizFlashcards(10)
 	v1 %<>% quizFlashcards(10,invert = TRUE)
