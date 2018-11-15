@@ -11,21 +11,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 
-add saveprogress function
-modify load to mantain progress if it has the expected extra columns
-
-add reset function
-
-add "banish" function to stop testing easy words. exclude from stat counts.
-
-
-print confirmation when exit or banish
-
-keep track of wrong answers for a question and prefer those, exclude "mark as incorrect"
-- wronganswers for normal, wrongprompts for invert
-
-
-
-add addwords function. append new words to existing table, keeping progress
-
-add failsafe for improper response selection
+add saveprogress function  
+modify load to mantain progress if it has the expected extra columns  
+add reset function  
+add "banish" function to stop testing easy words. exclude from stat counts.  
+print confirmation when exit or banish  
+add special input to mark last question as correct  
+keep track of wrong answers for a question and prefer those, exclude "mark as incorrect"  
+- wronganswers for normal, wrongprompts for invert  
+add addwords function. append new words to existing table, keeping progress  
+add failsafe for improper response selection  
